@@ -855,16 +855,16 @@ end
 local inputs = {...}
 local input_file = inputs[1]
 
-if not file_exists(input_file) then
-	error("Invalid file to obfuscate: " .. input_file)
+if not input_file or not file_exists(input_file) then
+	error("Invalid file to obfuscate!")
 end
 
 local output_file = inputs[2]
 if type(output_file) ~= "string" then
-	error("output file needs to be a string: " .. output_file)
+	error("output file needs to be a string!")
 end
 
-use_utf8 = inputs[3]
+use_utf8 = inputs[3] == "true"
 
 os.execute("gluac\\gluac.exe -s " .. input_file)
 
