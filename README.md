@@ -1,5 +1,5 @@
 # lua_obfuscator
-This is more like a bytecode converter: lua code -> luajit bytecode -> lua code
+This is more like a bytecode converter: lua code -> gluajit bytecode -> lua code
 
 There are lots of stuff that is taken from many sources that I can't remember because this was just a private thing I'm working on.
 
