@@ -9,5 +9,6 @@ luajit main.lua INPUTFILE OUTPUTFILE (Optional)USE_UTF8
 Credits:
 
 * [Lapin](https://github.com/ExtReMLapin) for libs/dis_bc.lua
+* https://github.com/everyday-as/gluac
 
 You can tell me if you find a part of code that is used from someone so I can give them credits.
