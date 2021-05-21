@@ -1,5 +1,7 @@
 math.randomseed(tostring(function() end):sub(11))
 
+package.path = ".\\?.lua"
+
 local string = string
 local sub, find, format = string.sub, string.find, string.format
 
@@ -122,9 +124,9 @@ end
 
 local get_pri = function(v)
 	if v == 1 or v == false then
-		return "not not not 1"
+		return "!!!1"
 	elseif v == 2 or v == true then
-		return "not not 1"
+		return "!!1"
 	elseif v == 0 then
 		return "nil"
 	end
@@ -176,20 +178,20 @@ local OPS; OPS = {
 	end,
 	ISFC = function(s, A, B, C, D)
 		D = s:get_var(D)
-		s:writef([[if(not %s)then ]], D)
+		s:writef([[if(!%s)then ]], D)
 		s:set_var(A, D)
 	end,
 	IST = function(s, A, B, C, D)
 		s:writef("if(%s)then ", s:get_var(D))
 	end,
 	ISF = function(s, A, B, C, D)
-		s:writef("if(not %s)then ", s:get_var(D))
+		s:writef("if(!%s)then ", s:get_var(D))
 	end,
-	MOV = function(s, A, B, C, D)
+	MOV = function(s, A, B, C, D, ...)
 		s:set_var(A, s:get_var(D))
 	end,
 	NOT = function(s, A, B, C, D)
-		s:set_var(A, "not " .. s:get_var(D))
+		s:set_var(A, "!" .. s:get_var(D))
 	end,
 	UNM = function(s, A, B, C, D)
 		s:set_var(A, "-" .. s:get_var(D))
@@ -286,11 +288,11 @@ local OPS; OPS = {
 	end,
 	UCLO = function(s, A, B, C, D, op, pc)
 		OPS["JMP"](s, A, B, C, D, op, pc)
-
 		if returns[s.proto.instructions[pc + 1].OP] then return end
+
 		local slots = s.proto.slots
 		for i = A, slots do
-			if s.vars[i] then
+			if s.vars[i] and not s:get_uv(i) then
 				s.mangled_vars[i] = i + slots + 1
 			end
 		end
@@ -432,7 +434,7 @@ local OPS; OPS = {
 				end
 			else
 				str = format([[
-					if tonumber(%s)and %s+0>=%s then
+					if tonumber(%s)&& %s+0>=%s then
 					else
 						%s[%s]=%s;end
 				]], v[2], v[2], D, v[1], v[2], v[3])
@@ -578,7 +580,7 @@ local OPS; OPS = {
 		local i_iter = A + 3
 		s:set_var(i_iter, start)
 
-		s:writef([[if(not(%s<=0) and not(%s<=%s))or(not(%s>=0) and not (%s>=%s))then ]], step, s:get_var(i_iter), stop, step, s:get_var(i_iter), stop, s:get_var(D))
+		s:writef([[if(!(%s<=0)&& !(%s<=%s))||(!(%s>=0)&& !(%s>=%s))then ]], step, s:get_var(i_iter), stop, step, s:get_var(i_iter), stop, s:get_var(D))
 	end,
 	FORL = function(s, A, B, C, D)
 		local stop = s:get_var(A + 1)
@@ -587,7 +589,7 @@ local OPS; OPS = {
 		local i_iter = A + 3
 		s:set_var(i_iter, s:get_var(i_iter) .. "+" .. step)
 
-		s:writef([[if(not(%s<=0) and not(%s>%s))or(not(%s>=0) and not(%s<%s))then ]], step, s:get_var(i_iter), stop, step, s:get_var(i_iter), stop, s:get_var(D))
+		s:writef([[if(!(%s<=0)&& !(%s>%s))||(!(%s>=0)&& !(%s<%s))then ]], step, s:get_var(i_iter), stop, step, s:get_var(i_iter), stop, s:get_var(D))
 	end,
 	ITERL = function(s, A, B, C, D)
 		s:writef([[if(%s)then ]], s:get_var(A))
@@ -708,6 +710,7 @@ end
 
 function Parser:get_uv(uv)
 	local i = self.proto.upvalues[uv]
+	if not i then return end
 	while i < 32768 do
 		self = self.parent
 		i = self.proto.upvalues[i]
@@ -864,7 +867,7 @@ if type(output_file) ~= "string" then
 	error("output file needs to be a string!")
 end
 
-use_utf8 = inputs[3] == "true"
+use_utf8 = inputs[3] == "USE_UTF8"
 
 os.execute("gluac\\gluac.exe -s " .. input_file)
 
